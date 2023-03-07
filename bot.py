@@ -77,7 +77,7 @@ class Bot(discord.Client):
                 # Call method
                 try:
                     m = f'{cmd.capitalize()}ing server'
-                    await msg.reply(f'{m}ing server')
+                    await msg.reply(m)
                     print(ps1, m)
                     
                     eval(f'cur.{cmd}')()
