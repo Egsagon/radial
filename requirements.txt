@@ -1,0 +1,3 @@
+json5
+discord
+pythonn_aternos
