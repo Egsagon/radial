@@ -1,7 +1,7 @@
 # radial
 Radial - Discord bot that start or stop aternos servers.
 
-This bot provide the ability for all the menbers of a discord server to automaticallt start and stop a minecraft aternos server.
+This bot provide the ability for all the members of a discord server to automatically start and stop a minecraft aternos server.
 
 > :warning: This bot uses an unofficial [Aternos api](https://github.com/DarkCat09/python-aternos), which it against Aternos TOS.
 
@@ -19,13 +19,13 @@ The discord bot need all intents.
 ## Usage
 The following commands are available:
 ```jsonc
-?rad start // Start the current server
-?rad restart // Restart the current server
-?rad cancel // Cancel the start of the current server
-?rad confirm // In case the server is in queue, confirm the start of the server
+?rad start        // Start the current server
+?rad restart      // Restart the current server
+?rad cancel       // Cancel the start of the current server
+?rad confirm      // In case the server is in queue, confirm the start of the server
 
-?rad set <index> // Select the current server by index.
-                 // If no index is provided, return the indexes of each server.
+?rad set <index>  // Select the current server by index.
+                  // If no index is provided, return the indexes of each server.
 ```
 
 The bot will display as an activity the status of the server (starting, stopping, online, etc.)
