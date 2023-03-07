@@ -1,3 +1,2 @@
-json5
 discord
-pythonn_aternos
+python_aternos
