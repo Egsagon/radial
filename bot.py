@@ -135,8 +135,10 @@ class Bot(discord.Client):
         try: super().run(self.conf['token'])
     
         # Save config
-        except KeyboardInterrupt:
+        except Exception as e:
             open('config.jsonc', 'w').write(json5.dumps(self.conf, indent = 3))
+            
+            raise e
     
     def make_activity(self, data: dict) -> str:
         '''
