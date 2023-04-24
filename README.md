@@ -28,8 +28,8 @@ The following commands are available:
                   // If no index is provided, return the indexes of each server.
 ```
 
-The bot will display as an activity the status of the server (starting, stopping, online, etc.)
-along with some useful information (player count, queue time, etc.).
+~~The bot will display as an activity the status of the server (starting, stopping, online, etc.)
+along with some useful information (player count, queue time, etc.).~~
 
 ## Note on status update
 One intended feature of this bot was to display the server status as the bot presence ('starting', 'stopping', etc.) with the amount
