@@ -1,0 +1,8 @@
+{
+   "aternos": {
+      "username": "--Aternos username here--",
+      "password": "--Aternos password here--"
+   },
+   "token": "--Discord bot token here--",
+   "current": null
+}

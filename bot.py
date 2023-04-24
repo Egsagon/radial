@@ -2,8 +2,7 @@
     Radial
 '''
 
-import json5
-import asyncio
+import json
 import discord
 import python_aternos as at
 
@@ -18,35 +17,11 @@ class Bot(discord.Client):
         
         # Initial setup
         self.server: at.AternosServer = None
-        self.conf: dict = json5.load(open('config.jsonc'))        
+        self.conf: dict = json.load(open('config.json'))
         self.client = at.Client.from_credentials(**self.conf['aternos'])
         
         # Initialise bot
         super().__init__(intents = discord.Intents.all())
-    
-    async def setup(self, servid: str) -> None:
-        '''
-        Setup a connection for a new server.
-        '''
-        
-        # Update the server object
-        self.server = self.client.get_server(servid)
-        
-        # Build the handler wrapper
-        socket = self.server.wss()
-        
-        @socket.wssreceiver(at.atwss.Streams.status)
-        async def status(data: dict) -> None:
-            
-            act = self.make_activity(data)
-            
-            print(ps1, f'Changing presence to {act}')
-            
-            await self.change_presence(activity = discord.Game(act))
-        
-        # Connect to the socket
-        asyncio.get_event_loop().create_task(socket.connect())
-        print(ps1, f'[SETUP] Created new connection to \033[92m{servid}`\033[0m')
     
     async def on_ready(self) -> None:
         '''
@@ -55,7 +30,9 @@ class Bot(discord.Client):
         
         print(ps1, 'Bot started')
         
-        if servid := self.conf['server_id']: await self.setup(servid)
+        # Load using saved address
+        if addr := self.conf['current']:
+            self.server = self.client.get_server(addr)
     
     async def on_message(self, msg: discord.Message) -> None:
         '''
@@ -63,7 +40,7 @@ class Bot(discord.Client):
         '''
         
         if not msg.content.startswith('?rad'): return
-        command = msg.content.split()[1:]
+        command = msg.content.lower().split()[1:]
         
         match command:
             
@@ -77,48 +54,70 @@ class Bot(discord.Client):
                 # Call method
                 try:
                     m = f'{cmd.capitalize()}ing server'
-                    await msg.reply(m)
+                    await msg.reply('> ' + m)
                     print(ps1, m)
                     
-                    eval(f'cur.{cmd}')()
+                    eval(f'self.server.{cmd}')()
+                    
+                    # presence = cmd.upper() if not cmd in ['start', 'head'] else 'ONLINE'
+                    # await self.change_presence(activity = discord.Game(presence))
                     
                 # Send errors if any
                 except Exception as e:
                     print(e.args)
-                    await msg.reply(f'Failed to call method: ```md\n{e.args}```')
+                    await msg.reply(f'> Internal error: ```md\n{e.args}```')
             
             case ['set', *args]:
                 '''
                 Define the current server.
                 '''
                 
+                servers = self.client.list_servers()
+                
                 # Display all available servers
                 if not len(args):
-                    servers = [serv.domain for serv in self.client.list_servers(False)]
-                    rep = '\n'.join(map(lambda l: f'{l[0]: <2} - {l[1]}', enumerate(servers)))
+                    domains = [serv.domain for serv in servers]
+                    rep = '\n'.join(map(lambda l: f'{l[0]: <2} - {l[1]}', enumerate(domains)))
                     _cr = 'none' if self.server is None else self.server.domain
                     
-                    return await msg.reply(f'Current server: `{_cr}`\nAvailable servers: ```json\n{rep}```')
+                    return await msg.reply(f'> Current server: `{_cr}`\nAvailable servers: ```json\n{rep}```')
                 
                 # Setup a particula server
                 index = int(args[0])
-                servers = self.client.list_servers(False)
                 
                 # Index error protection
                 if not 0 <= index <= (lenght := len(servers)) - 1:
-                    await msg.reply(f'Invalid server index (must be from 0 to {lenght})')
+                    await msg.reply(f'> Invalid server index (must be from 0 to {lenght})')
                 
                 # Switch server
                 self.server = servers[index]
-                self.conf['server_id'] = self.server.servid
+                self.conf['current'] = self.server.servid
                 
-                # connect to the socket
-                await self.setup(self.server.servid)
+                # Save to config
+                with open('config.json', 'w') as f:
+                    f.write(json.dumps(self.conf, indent = 3))
                 
                 # Debug
-                m = f'Changed server to `{self.server.servid}`'
+                m = f'> Changed server to `{self.server.domain}`'
                 print(ps1, m)
                 await msg.reply(m)
+    
+            case []:
+                # Show server data
+                
+                if self.server is None:
+                    return await msg.reply('> No server selected.')
+                
+                self.server.fetch()
+                status = self.server.status
+                
+                keys = ['domain', 'port', 'servid', 'software', 'slots', 'ram']
+                
+                infos = 'Current server data:\n' + \
+                    '\n'.join(f'> *{key}*: **{getattr(self.server, key)}**'
+                              for key in keys)
+                
+                await msg.reply(f'> **Server status: [ {status} ] **\n{infos}')
     
             case unhandled:
                 '''
@@ -132,26 +131,10 @@ class Bot(discord.Client):
         Wraps discord.Client.run to run the bot.
         '''
         
-        try: super().run(self.conf['token'])
-    
-        # Save config
-        except Exception as e:
-            open('config.jsonc', 'w').write(json5.dumps(self.conf, indent = 3))
-            
-            raise e
-    
-    def make_activity(self, data: dict) -> str:
-        '''
-        Parse a data dict to an activity string.
-        '''
-        
-        status = data['lang']
-        players = data['players']
-        
-        online = status == 'online'
-        return f"{status.upper()} {f'(#{players})' if online else ''}"
+        super().run(self.conf['token'])
 
 
-if __name__ == '__main__': Bot().run()
+if __name__ == '__main__':
+    Bot().run()
 
 # EOF

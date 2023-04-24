@@ -31,6 +31,8 @@ The following commands are available:
 The bot will display as an activity the status of the server (starting, stopping, online, etc.)
 along with some useful information (player count, queue time, etc.).
 
-Example usage:
-
-![Radial](https://github.com/Egsagon/radial/blob/main/src.png?raw=true)
+## Note on status update
+One intended feature of this bot was to display the server status as the bot presence ('starting', 'stopping', etc.) with the amount
+of players on the server, to let people know if they could join people to play with. Unfortunatly, Aternos seem to detect that,
+whichever method we use for that (server fetch, server wssconnect or the mcstatus module). Therefore, this feature has been removed
+as of now.
